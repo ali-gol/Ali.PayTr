@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PayTr.Payment.Abstractions\PayTr.Payment.Abstractions.csproj" />
+    <ProjectReference Include="..\PayTr.Payment.Core\PayTr.Payment.Core.csproj" />
+    <ProjectReference Include="..\PayTr.Payment.EFCore\PayTr.Payment.EFCore.csproj" />
+    <ProjectReference Include="..\PayTr.Payment.Endpoints\PayTr.Payment.Endpoints.csproj" />
+    
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>

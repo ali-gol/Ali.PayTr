@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="PayTr.Payment.Abstractions/PayTr.Payment.Abstractions.csproj" />
+    <Project Path="PayTr.Payment.Core/PayTr.Payment.Core.csproj" />
+    <Project Path="PayTr.Payment.EFCore/PayTr.Payment.EFCore.csproj" />
+    <Project Path="PayTr.Payment.Endpoints/PayTr.Payment.AspNetCore.csproj" />
+    <Project Path="WebApplication1/WebApplication1.csproj" />
+  </Folder>
+</Solution>
