@@ -1,10 +1,13 @@
 # PayTr.Payment
 
-## Client notification mechanism
+## Event dispatcher pattern for final payment results
 
-When PayTR callback processing reaches a **final payment state** (`success` or `failed`), the library notifies consumers through interface-based handlers.
+The package now uses an **interface-based event dispatcher pattern** for terminal PayTR results.
 
-Implement `IPayTrOrderEventHandler` in your application and register it using `AddPayTrOrderEventHandler<THandler>()`.
+- `IPayTrOrderEventHandler`: consumer-implemented handlers.
+- `IPayTrOrderEventDispatcher`: library dispatcher that fans out to all registered handlers.
+
+When callback processing finalizes an order (`success`/`failed`), `PayTrNotificationProcessor` dispatches the result through `IPayTrOrderEventDispatcher`.
 
 ```csharp
 using PayTr.Payment.Abstractions.Events;
@@ -15,22 +18,23 @@ public sealed class PaymentResultNotifier : IPayTrOrderEventHandler
 {
     public Task OnPaymentSucceededAsync(Guid correlationId, OrderPayTrNotificationDto notification)
     {
-        // Notify your system (queue, webhook, email, etc.)
+        // Push to queue / webhook / email / etc.
         return Task.CompletedTask;
     }
 
     public Task OnPaymentFailedAsync(Guid correlationId, OrderPayTrNotificationDto notification)
     {
-        // Notify your system (queue, webhook, email, etc.)
+        // Push to queue / webhook / email / etc.
         return Task.CompletedTask;
     }
 }
 
 builder.Services.AddPayTrPaymentsCore(builder.Configuration);
-builder.Services.AddPayTrOrderEventHandler<PaymentResultNotifier>();
+builder.Services.AddPayTrOrderEventHandler<PaymentResultNotifier>(); // default Scoped
 ```
 
 ### Notes
-- Handlers are triggered only once when the order becomes final (`Success`/`Failed`) to keep callback processing idempotent.
+- Dispatch happens only once per order finalization to keep processing idempotent.
 - Multiple handlers are supported.
-- Handler failures are logged and do not break PayTR callback processing.
+- Handler failures are isolated and logged by the dispatcher.
+- You can choose handler lifetime with `AddPayTrOrderEventHandler<THandler>(ServiceLifetime)`.

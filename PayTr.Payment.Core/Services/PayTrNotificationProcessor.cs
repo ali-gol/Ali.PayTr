@@ -19,7 +19,7 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
     private readonly PayTrOptions _options;
     private readonly ILogger<PayTrNotificationProcessor> _logger;
     private readonly PayTrFailReasonService _payTrFailReasonService;
-    private readonly IEnumerable<IPayTrOrderEventHandler> _eventHandlers;
+    private readonly IPayTrOrderEventDispatcher _eventDispatcher;
 
     public PayTrNotificationProcessor(
         IPayTrRepository repository,
@@ -27,14 +27,14 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
         IOptions<PayTrOptions> options,
         ILogger<PayTrNotificationProcessor> logger,
         PayTrFailReasonService payTrFailReasonService,
-        IEnumerable<IPayTrOrderEventHandler> eventHandlers)
+        IPayTrOrderEventDispatcher eventDispatcher)
     {
         _repository = repository;
         _hashService = hashService;
         _options = options.Value;
         _logger = logger;
         _payTrFailReasonService = payTrFailReasonService;
-        _eventHandlers = eventHandlers;
+        _eventDispatcher = eventDispatcher;
     }
 
     public async Task ProcessNotificationAsync(PayTrNotificationRequest notification, CancellationToken cancellationToken = default)
@@ -104,13 +104,14 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
 
         if (!wasFinalized)
         {
-            await NotifyOrderResultAsync(correlationId, notification, cancellationToken);
+            var orderNotification = CreateOrderNotification(notification);
+            await _eventDispatcher.DispatchAsync(correlationId, orderNotification, cancellationToken);
         }
     }
 
-    private async Task NotifyOrderResultAsync(Guid correlationId, PayTrNotificationRequest request, CancellationToken cancellationToken)
+    private OrderPayTrNotificationDto CreateOrderNotification(PayTrNotificationRequest request)
     {
-        var orderNotification = new OrderPayTrNotificationDto
+        return new OrderPayTrNotificationDto
         {
             merchant_oid = request.MerchantOid,
             status = request.Status,
@@ -123,29 +124,6 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
             test_mode = request.TestMode,
             merchant_id = _options.MerchantId.ToString()
         };
-
-        foreach (var eventHandler in _eventHandlers)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                if (string.Equals(request.Status, "success", StringComparison.OrdinalIgnoreCase))
-                {
-                    await eventHandler.OnPaymentSucceededAsync(correlationId, orderNotification);
-                    continue;
-                }
-
-                await eventHandler.OnPaymentFailedAsync(correlationId, orderNotification);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "Error while notifying {HandlerType} for order {CorrelationId}.",
-                    eventHandler.GetType().FullName,
-                    correlationId);
-            }
-        }
     }
 
     private async Task LogNotificationAsync(PayTrNotificationRequest notification, string? failedReason, Guid? orderId, CancellationToken ct)

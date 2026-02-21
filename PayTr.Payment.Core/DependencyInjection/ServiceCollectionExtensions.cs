@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using PayTr.Payment.Abstractions.Events;
 using PayTr.Payment.Abstractions.Interfaces;
 using PayTr.Payment.Abstractions.Options;
@@ -21,15 +20,15 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<PayTrFailReasonService>();
         services.AddScoped<IPayTrOrderService, PayTrOrderService>();
         services.AddScoped<IPayTrNotificationProcessor, PayTrNotificationProcessor>();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPayTrOrderEventHandler, NullPayTrOrderEventHandler>());
+        services.AddScoped<IPayTrOrderEventDispatcher, PayTrOrderEventDispatcher>();
 
         return services;
     }
 
-    public static IServiceCollection AddPayTrOrderEventHandler<THandler>(this IServiceCollection services)
+    public static IServiceCollection AddPayTrOrderEventHandler<THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where THandler : class, IPayTrOrderEventHandler
     {
-        services.AddSingleton<IPayTrOrderEventHandler, THandler>();
+        services.Add(new ServiceDescriptor(typeof(IPayTrOrderEventHandler), typeof(THandler), lifetime));
         return services;
     }
 }
