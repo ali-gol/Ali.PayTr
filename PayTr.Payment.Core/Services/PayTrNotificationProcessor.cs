@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PayTr.Payment.Abstractions.Events;
 using PayTr.Payment.Abstractions.Interfaces;
 using PayTr.Payment.Abstractions.Models;
 using PayTr.Payment.Abstractions.Options;
@@ -18,19 +19,22 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
     private readonly PayTrOptions _options;
     private readonly ILogger<PayTrNotificationProcessor> _logger;
     private readonly PayTrFailReasonService _payTrFailReasonService;
+    private readonly IPayTrOrderEventDispatcher _eventDispatcher;
 
     public PayTrNotificationProcessor(
         IPayTrRepository repository,
         IPayTrHashService hashService,
         IOptions<PayTrOptions> options,
         ILogger<PayTrNotificationProcessor> logger,
-        PayTrFailReasonService payTrFailReasonService)
+        PayTrFailReasonService payTrFailReasonService,
+        IPayTrOrderEventDispatcher eventDispatcher)
     {
         _repository = repository;
         _hashService = hashService;
         _options = options.Value;
         _logger = logger;
         _payTrFailReasonService = payTrFailReasonService;
+        _eventDispatcher = eventDispatcher;
     }
 
     public async Task ProcessNotificationAsync(PayTrNotificationRequest notification, CancellationToken cancellationToken = default)
@@ -71,11 +75,13 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
 
         // 3. Update Order
         var oldStatus = order.Status;
-        var newStatus = notification.Status == "success" ? "Success" : "Failed";
+        var isSuccessStatus = string.Equals(notification.Status, "success", StringComparison.OrdinalIgnoreCase);
+        var newStatus = isSuccessStatus ? "Success" : "Failed";
 
-        // Only update if not already final? 
-        // PayTR might send multiple notifications.
-        if (oldStatus != "Success")
+        // PayTR can send multiple notifications for the same merchant_oid.
+        // We should finalize once and notify client integrations only once.
+        var wasFinalized = oldStatus is "Success" or "Failed";
+        if (!wasFinalized)
         {
             order.Status = newStatus;
             order.UpdatedDate = DateTimeOffset.UtcNow;
@@ -84,7 +90,7 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
             await _repository.AddLogAsync(new PayTrOrderLogHistory
             {
                 PayTrOrderId = order.Id,
-                Message = notification.Status == "success" ? "Payment Successful" : $"Payment Failed: {notification.FailedReasonMsg}",
+                Message = isSuccessStatus ? "Payment Successful" : $"Payment Failed: {notification.FailedReasonMsg}",
                 OldStatus = oldStatus,
                 NewStatus = newStatus,
                 CreatedDate = DateTimeOffset.UtcNow
@@ -95,6 +101,29 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
         await LogNotificationAsync(notification, null, order.Id, cancellationToken);
 
         await _repository.SaveChangesAsync(cancellationToken);
+
+        if (!wasFinalized)
+        {
+            var orderNotification = CreateOrderNotification(notification);
+            await _eventDispatcher.DispatchAsync(correlationId, orderNotification, cancellationToken);
+        }
+    }
+
+    private OrderPayTrNotificationDto CreateOrderNotification(PayTrNotificationRequest request)
+    {
+        return new OrderPayTrNotificationDto
+        {
+            merchant_oid = request.MerchantOid,
+            status = request.Status,
+            total_amount = request.TotalAmount,
+            hash = request.Hash,
+            failed_reason_code = request.FailedReasonCode.ToString(),
+            failed_reason_msg = request.FailedReasonMsg,
+            payment_type = request.PaymentType,
+            currency = request.Currency,
+            test_mode = request.TestMode,
+            merchant_id = _options.MerchantId.ToString()
+        };
     }
 
     private async Task LogNotificationAsync(PayTrNotificationRequest notification, string? failedReason, Guid? orderId, CancellationToken ct)
