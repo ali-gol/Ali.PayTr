@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Ali.PayTr.Abstractions/Ali.PayTr.Abstractions.csproj" />
+    <Project Path="src/Ali.PayTr.Core/Ali.PayTr.Core.csproj" />
+    <Project Path="src/Ali.PayTr.EFCore/Ali.PayTr.EFCore.csproj" />
+    <Project Path="src/Ali.PayTr.AspNetCore/Ali.PayTr.AspNetCore.csproj" />
+    <Project Path="src/Ali.PayTr/Ali.PayTr.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/WebApplication1/WebApplication1.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Ali.PayTr.Tests/Ali.PayTr.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>Ali.PayTr</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ali.PayTr.Abstractions\Ali.PayTr.Abstractions.csproj" />
+    <ProjectReference Include="..\Ali.PayTr.Core\Ali.PayTr.Core.csproj" />
+    <ProjectReference Include="..\Ali.PayTr.EFCore\Ali.PayTr.EFCore.csproj" />
+    <ProjectReference Include="..\Ali.PayTr.AspNetCore\Ali.PayTr.AspNetCore.csproj" />
+  </ItemGroup>
+</Project>

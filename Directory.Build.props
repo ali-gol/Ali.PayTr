@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <Version>0.9.2</Version>
+    <Authors>Ali Gol</Authors>
+    <Company>Ali</Company>
+    <Description>A modular, clean-architecture .NET payment integration library for PayTR.</Description>
+    <RepositoryUrl>https://github.com/ali-gol/Ali.PayTr</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/ali-gol/Ali.PayTr</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>paytr;payment;odeme;aspnetcore;efcore;integration</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <!-- Automatically package the root README.md into every NuGet package -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>
