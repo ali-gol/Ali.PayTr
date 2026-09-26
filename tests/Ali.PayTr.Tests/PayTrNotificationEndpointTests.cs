@@ -79,7 +79,7 @@ public class PayTrNotificationEndpointTests
         _httpContextAccessorMock.Setup(x => x.HttpContext).Returns(context);
 
         _processorMock.Setup(x => x.ProcessNotificationAsync(It.IsAny<PayTrNotificationRequest>()))
-            .ReturnsAsync(new PayTrNotificationVerifyResult { IsVerificationSuccessful = true });
+            .ReturnsAsync(new PayTrNotificationVerifyResult { IsVerificationSuccessful = true, ExpectedHash = "", ReceivedHash = "" });
 
         // Act
         var result = await PayTrNotificationEndpoint.HandleAsync(

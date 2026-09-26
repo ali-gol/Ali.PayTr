@@ -42,14 +42,14 @@ namespace WebApplication1.Controllers
         public IActionResult ErrorReturnUrl(Guid correlationId)
         {
             //call your database or service to get error details by correlationId and pass to view if needed.
-            object order = null; //get order details by correlationId.
+            object? order = null; //get order details by correlationId.
             return View(order);
         }
 
         public IActionResult SuccessReturnUrl(Guid correlationId)
         {
             //call your database or service to get error details by correlationId and pass to view if needed.
-            object order = null; //get order details by correlationId.
+            object? order = null; //get order details by correlationId.
             return View(order);
         }
     }

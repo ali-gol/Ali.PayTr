@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 using Ali.PayTr.EFCore.Extensions;
 namespace WebApplication1.Models
@@ -26,7 +26,7 @@ namespace WebApplication1.Models
     public class Product
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public double Price { get; set; }
     }
 }

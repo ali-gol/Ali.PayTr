@@ -1,4 +1,4 @@
-﻿using Ali.PayTr.Abstractions.Enums;
+using Ali.PayTr.Abstractions.Enums;
 
 namespace Ali.PayTr.Abstractions.Models;
 
@@ -7,12 +7,14 @@ public sealed class PayTrCreatePaymentRequest
     /// <summary>
     /// Gets or sets the IP address of the client associated with the current request.
     /// Will be used for monitoring and logging purposes, and may also be required by PayTR API for fraud prevention and security checks.
+    /// If left null, the package will automatically detect the IP Address using IHttpContextAccessor.
+    /// So the default behavior is automatic detection, but it can be overridden by setting this property explicitly.
     /// </summary>
-    public string ClientIp { get; set; } = default!;
-    public string CustomerFullName { get; set; }
-    public string CustomerAddress { get; set; }
-    public string CustomerEmail { get; set; }
-    public string CustomerPhone { get; set; }
+    public string? ClientIp { get; set; }
+    public required string CustomerFullName { get; set; }
+    public required string CustomerAddress { get; set; }
+    public required string CustomerEmail { get; set; }
+    public required string CustomerPhone { get; set; }
 
     /// <summary>
     /// The CorrelationId is a unique identifier that can be used to correlate the payment request. It is recommended pass your own unique `PaymentId` on your system.

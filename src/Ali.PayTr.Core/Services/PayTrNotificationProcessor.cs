@@ -5,7 +5,6 @@ using Ali.PayTr.Abstractions.Models;
 using Ali.PayTr.Abstractions.Options;
 using Ali.PayTr.Core.Entities;
 using Ali.PayTr.Core.Interfaces;
-using Ali.PayTr.Core.Results;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
@@ -40,6 +39,9 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
 
     public async Task<PayTrNotificationVerifyResult> ProcessNotificationAsync(PayTrNotificationRequest notification, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(notification, nameof(notification));
+        ArgumentException.ThrowIfNullOrEmpty(notification.Hash, nameof(notification.Hash));
+        ArgumentException.ThrowIfNullOrEmpty(notification.MerchantOid, nameof(notification.MerchantOid));
         var correlationId = Guid.Parse(notification.MerchantOid);
 
         var hashStr = notification.MerchantOid + _options.MerchantSalt + notification.Status + notification.TotalAmount;
@@ -47,7 +49,9 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
         //if (expectedHash != notification.Hash)
         //basically we should not use simple string equality for hash comparison to prevent timing attacks.
         //Instead, we can use a method that compares the hashes in constant time.
-        if (!CryptographicOperations.FixedTimeEquals(left: Convert.FromBase64String(expectedHash), right: Convert.FromBase64String(notification.Hash)))
+        var expectedHashBytes = System.Text.Encoding.UTF8.GetBytes(expectedHash);
+        var receivedHashBytes = System.Text.Encoding.UTF8.GetBytes(notification.Hash);
+        if (!CryptographicOperations.FixedTimeEquals(left: expectedHashBytes, right: receivedHashBytes))
         {
             _logger.LogWarning("Invalid Hash for Order: {correlationId}", correlationId);
             await LogNotificationAsync(notification, "Invalid Hash", null, cancellationToken);
@@ -71,8 +75,8 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
             notification.FailedReasonMsg = failedReason.failed_reason_msg;
             notification.FailedReasonDescription = failedReason.description;
         }
-        var order = await _repository.GetOrderByCorrelationIdAsync(correlationId, cancellationToken);
 
+        var order = await _repository.GetOrderByCorrelationIdAsync(correlationId, cancellationToken);
         if (order == null)
         {
             _logger.LogWarning("Order not found for MerchantOid: {oid}", notification.MerchantOid);
@@ -182,7 +186,8 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
             FailedReasonCode = request.FailedReasonCode.ToString(),
             FailedReasonMessage = request.FailedReasonMsg,
             FailedReasonDescription = request.FailedReasonDescription,
-            IsSystemError = false
+            IsSystemError = false,
+            RawNotificationBody = request.RawFormAsJson
         };
     }
 
@@ -236,3 +241,5 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
         return JsonSerializer.Serialize(request);
     }
 }
+
+

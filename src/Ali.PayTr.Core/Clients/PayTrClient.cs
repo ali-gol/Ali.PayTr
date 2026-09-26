@@ -69,7 +69,7 @@ public sealed class PayTrClient : IPayTrClient
         var postData = new Dictionary<string, string>
         {
             ["merchant_id"] = _options.MerchantId,
-            ["user_ip"] = userIp,
+            ["user_ip"] = userIp ?? "127.0.0.1",
             ["merchant_oid"] = merchantOid,
             ["email"] = request.CustomerEmail,
             ["payment_amount"] = paymentAmountStr,

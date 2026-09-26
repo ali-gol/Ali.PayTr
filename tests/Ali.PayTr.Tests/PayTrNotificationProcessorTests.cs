@@ -56,7 +56,8 @@ public class PayTrNotificationProcessorTests
             MerchantOid = Guid.NewGuid().ToString(),
             Status = "success",
             TotalAmount = "100",
-            Hash = "aW52YWxpZF9oYXNo"
+            Hash = "aW52YWxpZF9oYXNo",
+            RawFormAsJson = "{}"
         };
 
         // Return a different hash than what's in the notification

@@ -1,4 +1,4 @@
-﻿using Ali.PayTr.Abstractions.Models;
+using Ali.PayTr.Abstractions.Models;
 
 namespace Ali.PayTr.Core.Services
 {
@@ -6,7 +6,6 @@ namespace Ali.PayTr.Core.Services
     {
         private Dictionary<int, PayTrFeedbackFailedReasonItem> FailReasons = new()
         {
-                { -1, null },
                 { 0, new PayTrFeedbackFailedReasonItem(0, "DEĞİŞKEN (AÇIKLAMAYI OKUYUN)","Ödemenin neden onaylanmadığına ilişkin, detaylı hata mesajı (Örneğin: Kartın limiti / bakiyesi yetersiz).") },
                 { 1, new PayTrFeedbackFailedReasonItem(1, "Kimlik Doğrulama yapılmadı. Lütfen tekrar deneyin ve işlemi tamamlayın.","Müşteri, kimlik doğrulama adımında cep telefonu numarasını girmedi.") },
                 { 2, new PayTrFeedbackFailedReasonItem(2, "Kimlik Doğrulama başarısız. Lütfen tekrar deneyin ve şifreyi doğru girin.", "Müşteri, cep telefonuna gelen şifreyi doğru girmedi.") },
@@ -21,7 +20,11 @@ namespace Ali.PayTr.Core.Services
 
         public PayTrFeedbackFailedReasonItem GetFailedReasonByReasonCode(int reasonCode)
         {
-            return FailReasons[reasonCode];
+            if (FailReasons.TryGetValue(reasonCode, out var reason))
+            {
+                return reason;
+            }
+            return new PayTrFeedbackFailedReasonItem(reasonCode, "Bilinmeyen Hata", "Tanımlanmayan bir hata oluştu.");
         }
     }
 }

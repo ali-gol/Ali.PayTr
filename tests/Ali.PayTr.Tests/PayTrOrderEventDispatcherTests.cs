@@ -26,7 +26,7 @@ public class PayTrOrderEventDispatcherTests
         var handlers = new List<IPayTrOrderEventHandler> { _handlerMock1.Object, _handlerMock2.Object };
         var dispatcher = new PayTrOrderEventDispatcher(handlers, _loggerMock.Object);
         var correlationId = Guid.NewGuid();
-        var notification = new PayTrPaymentSuccessNotification();
+        var notification = new PayTrPaymentSuccessNotification { RawNotificationBody = "{}" };
 
         // Act
         await dispatcher.DispatchSuccessAsync(correlationId, notification);
@@ -43,7 +43,7 @@ public class PayTrOrderEventDispatcherTests
         var handlers = new List<IPayTrOrderEventHandler> { _handlerMock1.Object, _handlerMock2.Object };
         var dispatcher = new PayTrOrderEventDispatcher(handlers, _loggerMock.Object);
         var correlationId = Guid.NewGuid();
-        var notification = new PayTrPaymentFailedNotification();
+        var notification = new PayTrPaymentFailedNotification { RawNotificationBody = "{}" };
 
         // Act
         await dispatcher.DispatchFailureAsync(correlationId, notification);
@@ -63,7 +63,7 @@ public class PayTrOrderEventDispatcherTests
         var handlers = new List<IPayTrOrderEventHandler> { _handlerMock1.Object, _handlerMock2.Object };
         var dispatcher = new PayTrOrderEventDispatcher(handlers, _loggerMock.Object);
         var correlationId = Guid.NewGuid();
-        var notification = new PayTrPaymentSuccessNotification();
+        var notification = new PayTrPaymentSuccessNotification { RawNotificationBody = "{}" };
 
         // Act
         await dispatcher.DispatchSuccessAsync(correlationId, notification);

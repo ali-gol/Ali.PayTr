@@ -23,12 +23,15 @@ public class PayTrFailReasonServiceTests
     }
 
     [Fact]
-    public void GetFailedReasonByReasonCode_ShouldThrowKeyNotFoundException_WhenCodeIsInvalid()
+    public void GetFailedReasonByReasonCode_ShouldReturnUnknownReason_WhenCodeIsInvalid()
     {
         // Arrange
         var service = new PayTrFailReasonService();
 
-        // Act & Assert
-        Assert.Throws<KeyNotFoundException>(() => service.GetFailedReasonByReasonCode(999));
+        // Act 
+        var result = service.GetFailedReasonByReasonCode(999);
+        
+        // Assert
+        Assert.Equal("Bilinmeyen Hata", result.failed_reason_msg);
     }
 }

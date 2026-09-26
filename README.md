@@ -12,6 +12,8 @@
 
 ✅ **Otomatik Webhook İşleme**: PayTR'ın sunucudan-sunucuya bildirimlerini (`/paytr/notification`) otomatik olarak işler, HMAC hashlerini doğrular ve idempotentliği (tekrarsızlığı) güvenle kontrol eder.
 
+✅ **Otomatik İstemci IP Algılama (DX)**: Sipariş sırasında `ClientIp` özelliğini boş bırakırsanız, kütüphane ASP.NET Core `IHttpContextAccessor` üzerinden kullanıcının IP adresini otomatik olarak tespit eder.
+
 ✅ **Yapılandırılabilir Yönlendirme (Routing)**: Yapılandırılabilir bir `RoutePrefix` (örn. `/api/payments/paytr`) ile yerleşik Minimal API'lar sunar.
 
 ✅ **Veri Kalıcılığı Esnekliği**: Kendi içinde bir Entity Framework Core uygulamasıyla birlikte gelir, ancak sadece `IPayTrRepository` arayüzünü uygulayarak tam bir özelleştirmeye (örn. MongoDB, Dapper) olanak tanır.
@@ -40,6 +42,9 @@ builder.Services.AddPayTrPaymentsCore(builder.Configuration);
 
 // 2. Entity Framework Core Repository'yi ekleyin (veya kendi IPayTrRepository'nizi kaydedin)
 builder.Services.AddPayTrPaymentsEFCore<AppDbContext>();
+
+// 3. AspNetCore entegrasyonlarını ekleyin (IHttpContextAccessor üzerinden otomatik IP algılama vs. için)
+builder.Services.AddPayTrAspNetCore();
 
 // 3. Başarılı/Başarısız ödemeleri dinlemek için kendi özel event handler'ınızı kaydedin
 builder.Services.AddPayTrOrderEventHandler<MyOrderEventHandler>();
@@ -89,7 +94,7 @@ app.MapPost("/checkout", async (IPayTrOrderService orderService) =>
     var request = new PayTrCreatePaymentRequest
     {
         CorrelationId = Guid.NewGuid(), // Sizin kendi iç sisteminizdeki sipariş ID'niz
-        ClientIp = "127.0.0.1",
+        // ClientIp = "127.0.0.1", // (Opsiyonel) Boş bırakırsanız IHttpContextAccessor üzerinden otomatik tespit edilir.
         PaymentAmount = 250.50m,
         CustomerFullName = "Jane Doe",
         CustomerEmail = "jane@example.com",
@@ -211,6 +216,8 @@ A modular, clean-architecture .NET payment integration library for **PayTR**. Th
 
 ✅ **Automated Webhook Processing**: Automatically handles PayTR's server-to-server notifications (`/paytr/notification`), validates HMAC hashes, and verifies idempotency safely.
 
+✅ **Automated Client IP Detection (DX)**: If you leave the `ClientIp` property null during order creation, the library will automatically detect the user's IP address using ASP.NET Core's `IHttpContextAccessor`.
+
 ✅ **Configurable Routing**: Built-in Minimal APIs with a configurable `RoutePrefix` (e.g., `/api/payments/paytr`).
 
 ✅ **Data Persistence Flexibility**: Ships with an Entity Framework Core implementation, but allows full customizability (e.g., MongoDB, Dapper) by simply implementing `IPayTrRepository`.
@@ -239,6 +246,9 @@ builder.Services.AddPayTrPaymentsCore(builder.Configuration);
 
 // 2. Add the Entity Framework Core Repository (or register your own IPayTrRepository)
 builder.Services.AddPayTrPaymentsEFCore<AppDbContext>();
+
+// 3. Add AspNetCore integrations (for automated Client IP detection via IHttpContextAccessor, etc.)
+builder.Services.AddPayTrAspNetCore();
 
 // 3. Register your custom event handler to listen to successful/failed payments
 builder.Services.AddPayTrOrderEventHandler<MyOrderEventHandler>();
@@ -288,7 +298,7 @@ app.MapPost("/checkout", async (IPayTrOrderService orderService) =>
     var request = new PayTrCreatePaymentRequest
     {
         CorrelationId = Guid.NewGuid(), // Your internal unique order ID
-        ClientIp = "127.0.0.1",
+        // ClientIp = "127.0.0.1", // (Optional) Leave null to automatically detect via IHttpContextAccessor.
         PaymentAmount = 250.50m,
         CustomerFullName = "Jane Doe",
         CustomerEmail = "jane@example.com",

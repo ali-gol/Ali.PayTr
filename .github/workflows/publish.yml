@@ -1,0 +1,45 @@
+name: Publish to NuGet
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger when a tag starting with 'v' is pushed (e.g., v1.0.0)
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build projects
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Run Tests
+      run: dotnet test --configuration Release --no-build --verbosity normal
+
+    - name: Pack packages
+      run: dotnet pack --configuration Release --no-build --output ./nupkgs
+
+    - name: Authenticate to NuGet.org
+      id: login
+      uses: NuGet/login@v1
+      with:
+        user: aligol
+
+    - name: Push to NuGet
+      run: dotnet nuget push "./nupkgs/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

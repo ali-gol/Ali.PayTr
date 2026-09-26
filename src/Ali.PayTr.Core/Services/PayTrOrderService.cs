@@ -1,4 +1,4 @@
-﻿using Ali.PayTr.Abstractions.Enums;
+using Ali.PayTr.Abstractions.Enums;
 using Ali.PayTr.Abstractions.Interfaces;
 using Ali.PayTr.Abstractions.Models;
 using Ali.PayTr.Core.Entities;
@@ -13,19 +13,24 @@ public sealed class PayTrOrderService : IPayTrOrderService
     private readonly IPayTrClient _client;
     private readonly IPayTrRepository _repository;
     private readonly ILogger<PayTrOrderService> _logger;
+    private readonly IPayTrClientIpAccessor? _clientIpAccessor;
 
     public PayTrOrderService(
         IPayTrClient client,
         IPayTrRepository repository,
-        ILogger<PayTrOrderService> logger)
+        ILogger<PayTrOrderService> logger,
+        IEnumerable<IPayTrClientIpAccessor> clientIpAccessors)
     {
         _client = client;
         _repository = repository;
         _logger = logger;
+        _clientIpAccessor = clientIpAccessors.FirstOrDefault();
     }
 
     public async Task<PayTrCreatePaymentResponse> CreateOrderAndGetPaymentUrlAsync(PayTrCreatePaymentRequest request, CancellationToken cancellationToken = default)
     {
+        var clientIp = request.ClientIp ?? _clientIpAccessor?.GetClientIp() ?? "127.0.0.1";
+        request.ClientIp = clientIp;
 
         var order = new PayTrOrder
         {
@@ -38,7 +43,7 @@ public sealed class PayTrOrderService : IPayTrOrderService
             CustomerAddress = request.CustomerAddress,
             CustomerFullName = request.CustomerFullName,
             CustomerPhone = request.CustomerPhone,
-            ClientIp = request.ClientIp,
+            ClientIp = clientIp,
             BasketJson = JsonSerializer.Serialize(request.BasketItems),
             CorrelationId = request.CorrelationId,
             InstallmentCount = request.InstallmentCount

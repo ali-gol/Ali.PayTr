@@ -1,4 +1,4 @@
-﻿namespace Ali.PayTr.Abstractions.Models;
+namespace Ali.PayTr.Abstractions.Models;
 
 public sealed class PayTrPaymentFailedNotification
 {
@@ -13,6 +13,6 @@ public sealed class PayTrPaymentFailedNotification
     public string? FailedReasonCode { get; set; }
     public string FailedReasonMessage { get; set; } = default!;
     public string? FailedReasonDescription { get; set; }
-    public string RawNotificationBody { get; set; }
+    public required string RawNotificationBody { get; set; }
     public bool IsSystemError { get; set; }
 }

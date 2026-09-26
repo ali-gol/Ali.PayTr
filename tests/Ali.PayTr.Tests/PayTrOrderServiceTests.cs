@@ -23,7 +23,7 @@ public class PayTrOrderServiceTests
     public async Task CreateOrderAndGetPaymentUrlAsync_ShouldReturnSuccess_WhenClientSucceeds()
     {
 
-        var service = new PayTrOrderService(_mockClient.Object, _mockRepository.Object, _mockLogger.Object);
+        var service = new PayTrOrderService(_mockClient.Object, _mockRepository.Object, _mockLogger.Object, Array.Empty<IPayTrClientIpAccessor>());
 
         var request = new PayTrCreatePaymentRequest
         {
@@ -71,7 +71,7 @@ public class PayTrOrderServiceTests
     public async Task CreateOrderAndGetPaymentUrlAsync_ShouldReturnFail_WhenClientFails()
     {
 
-        var service = new PayTrOrderService(_mockClient.Object, _mockRepository.Object, _mockLogger.Object);
+        var service = new PayTrOrderService(_mockClient.Object, _mockRepository.Object, _mockLogger.Object, Array.Empty<IPayTrClientIpAccessor>());
 
         var request = new PayTrCreatePaymentRequest
         {

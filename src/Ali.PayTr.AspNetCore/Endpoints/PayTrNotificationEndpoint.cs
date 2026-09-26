@@ -13,7 +13,7 @@ internal static class PayTrNotificationEndpoint
         IPayTrNotificationProcessor processor,
         ILoggerFactory loggerFactory,
         IPayTrHashService hashService,
-        Microsoft.Extensions.Options.IOptions<Ali.PayTr.Abstractions.Options.PayTrOptions> options
+        Microsoft.Extensions.Options.IOptions<Abstractions.Options.PayTrOptions> options
         )
     {
         var logger = loggerFactory.CreateLogger(nameof(PayTrNotificationEndpoint));
@@ -33,7 +33,7 @@ internal static class PayTrNotificationEndpoint
             Status = form["status"].ToString(),
             TotalAmount = form["total_amount"].ToString(),
             Hash = form["hash"].ToString(),
-            //FailedReasonCode = failedReasonCode,
+            FailedReasonCode = int.TryParse(form["failed_reason_code"].ToString(), out var failedReasonCode) ? failedReasonCode : -1,
             FailedReasonMsg = form["failed_reason_msg"].ToString(),
             PaymentType = form["payment_type"].ToString(),
             Currency = form["currency"].ToString(),

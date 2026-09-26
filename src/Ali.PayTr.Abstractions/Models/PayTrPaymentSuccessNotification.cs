@@ -1,4 +1,4 @@
-﻿namespace Ali.PayTr.Abstractions.Models;
+namespace Ali.PayTr.Abstractions.Models;
 
 public sealed class PayTrPaymentSuccessNotification
 {
@@ -10,5 +10,5 @@ public sealed class PayTrPaymentSuccessNotification
     public string PaymentType { get; set; } = default!;
     public string Currency { get; set; } = default!;
     public string TestMode { get; set; } = default!;
-    public string RawNotificationBody { get; set; }
+    public required string RawNotificationBody { get; set; }
 }
