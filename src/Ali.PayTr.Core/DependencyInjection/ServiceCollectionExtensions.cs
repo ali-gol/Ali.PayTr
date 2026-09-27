@@ -1,4 +1,4 @@
-﻿using Ali.PayTr.Abstractions.Events;
+using Ali.PayTr.Abstractions.Events;
 using Ali.PayTr.Abstractions.Interfaces;
 using Ali.PayTr.Abstractions.Options;
 using Ali.PayTr.Core.Clients;
@@ -41,6 +41,16 @@ public static class ServiceCollectionExtensions
             client.BaseAddress = new Uri(options.ApiBaseUrl);
         });
 
+        return services;
+    }
+
+    public static IServiceCollection AddPayTrDirectApi(this IServiceCollection services)
+    {
+        services.AddHttpClient<IPayTrDirectClient, PayTrDirectClient>((serviceProvider, client) =>
+        {
+            var options = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PayTrOptions>>().Value;
+            client.BaseAddress = new Uri(options.ApiBaseUrl);
+        });
         return services;
     }
 
