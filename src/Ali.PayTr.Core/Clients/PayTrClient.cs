@@ -29,7 +29,7 @@ public sealed class PayTrClient : IPayTrClient
 
     public string ConvertAmountToString(decimal amount)
     {
-        return ((long)Math.Round(amount * 100)).ToString();
+        return ((long)Math.Round(amount * 100, MidpointRounding.AwayFromZero)).ToString();
     }
 
     private string BuildReturnUrl(string pattern, Guid correlationId)
@@ -79,7 +79,7 @@ public sealed class PayTrClient : IPayTrClient
             ["payment_amount"] = paymentAmountStr,
             ["paytr_token"] = paytrToken,
             ["user_basket"] = basketBase64,
-            ["debug_on"] = "1",
+            ["debug_on"] = _options.TestMode ? "1" : "0",
             ["no_installment"] = noInstallment,
             ["max_installment"] = maxInstallment,
             ["user_name"] = request.CustomerFullName,
@@ -93,33 +93,46 @@ public sealed class PayTrClient : IPayTrClient
             ["lang"] = request.Language ?? _options.Language ?? "tr"
         };
 
-        using var response = await _httpClient.PostAsync("odeme/api/get-token", new FormUrlEncodedContent(postData), cancellationToken);
-        var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
-        _logger.LogTrace($"PayTR api response received: {request.CorrelationId}\n{responseString}");
-        using var doc = JsonDocument.Parse(responseString);
-        var status = doc.RootElement.GetProperty("status").GetString();
-        if (status == "success")
+        try
         {
-            var token = doc.RootElement.GetProperty("token").GetString();
-            return new PayTrCreatePaymentResponse
+            using var response = await _httpClient.PostAsync("odeme/api/get-token", new FormUrlEncodedContent(postData), cancellationToken);
+            var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogTrace($"PayTR api response received: {request.CorrelationId}\n{responseString}");
+            using var doc = JsonDocument.Parse(responseString);
+            var status = doc.RootElement.GetProperty("status").GetString();
+            if (status == "success")
             {
-                IsSuccess = true,
-                CorrelationId = request.CorrelationId,
-                RedirectUrl = $"https://www.paytr.com/odeme/guvenli/{token}",
-                Token = token
-            };
+                var token = doc.RootElement.GetProperty("token").GetString();
+                return new PayTrCreatePaymentResponse
+                {
+                    IsSuccess = true,
+                    CorrelationId = request.CorrelationId,
+                    RedirectUrl = $"https://www.paytr.com/odeme/guvenli/{token}",
+                    Token = token
+                };
+            }
+            else
+            {
+                var reason = "Unknown";
+                if (doc.RootElement.TryGetProperty("reason", out var r))
+                    reason = r.GetString();
+                _logger.LogError($"PayTR Api unknown error. CorrelationId:{request.CorrelationId}: reason:{reason}");
+                return new PayTrCreatePaymentResponse
+                {
+                    IsSuccess = false,
+                    CorrelationId = request.CorrelationId,
+                    Message = reason
+                };
+            }
         }
-        else
+        catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
         {
-            var reason = "Unknown";
-            if (doc.RootElement.TryGetProperty("reason", out var r))
-                reason = r.GetString();
-            _logger.LogError($"PayTR Api unknown error. CorrelationId:{request.CorrelationId}: reason:{reason}");
+            _logger.LogError(ex, "Network error occurred while calling PayTR API for CorrelationId: {CorrelationId}", request.CorrelationId);
             return new PayTrCreatePaymentResponse
             {
                 IsSuccess = false,
                 CorrelationId = request.CorrelationId,
-                Message = reason
+                Message = "Network error occurred while communicating with PayTR. Please try again."
             };
         }
     }
