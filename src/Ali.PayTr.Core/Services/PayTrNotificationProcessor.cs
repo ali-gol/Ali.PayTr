@@ -79,7 +79,7 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
                 ReceivedHash = notification.Hash
             };
         }
-        if (notification.IsSuccess)
+        if (!notification.IsSuccess)
         {
             var failedReason = _payTrFailReasonService.GetFailedReasonByReasonCode(notification.FailedReasonCode);
             notification.FailedReasonMsg = failedReason.failed_reason_msg;

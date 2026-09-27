@@ -41,6 +41,19 @@ public sealed class PayTrClient : IPayTrClient
 
     public async Task<PayTrCreatePaymentResponse> CreatePaymentAsync(PayTrCreatePaymentRequest request, CancellationToken cancellationToken = default)
     {
+        if (request.CorrelationId == Guid.Empty)
+        {
+            return new PayTrCreatePaymentResponse { IsSuccess = false, CorrelationId = request.CorrelationId, Message = "CorrelationId must be set." };
+        }
+        if (request.PaymentAmount <= 0)
+        {
+            return new PayTrCreatePaymentResponse { IsSuccess = false, CorrelationId = request.CorrelationId, Message = "PaymentAmount must be greater than zero." };
+        }
+        if (request.BasketItems == null || !request.BasketItems.Any())
+        {
+            return new PayTrCreatePaymentResponse { IsSuccess = false, CorrelationId = request.CorrelationId, Message = "BasketItems cannot be empty." };
+        }
+
         // Calculate Hash
         // user_ip + merchant_oid + email + payment_amount + user_basket + no_installment + max_installment + currency + test_mode
 
@@ -79,7 +92,7 @@ public sealed class PayTrClient : IPayTrClient
             ["payment_amount"] = paymentAmountStr,
             ["paytr_token"] = paytrToken,
             ["user_basket"] = basketBase64,
-            ["debug_on"] = _options.TestMode ? "1" : "0",
+            ["debug_on"] = _options.DebugMode ? "1" : "0",
             ["no_installment"] = noInstallment,
             ["max_installment"] = maxInstallment,
             ["user_name"] = request.CustomerFullName,
@@ -124,6 +137,16 @@ public sealed class PayTrClient : IPayTrClient
                     Message = reason
                 };
             }
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Invalid response format from PayTR for CorrelationId: {CorrelationId}", request.CorrelationId);
+            return new PayTrCreatePaymentResponse
+            {
+                IsSuccess = false,
+                CorrelationId = request.CorrelationId,
+                Message = "Invalid response format from PayTR."
+            };
         }
         catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
         {
