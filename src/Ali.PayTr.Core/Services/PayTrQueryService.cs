@@ -1,4 +1,4 @@
-﻿using Ali.PayTr.Abstractions.Interfaces;
+using Ali.PayTr.Abstractions.Interfaces;
 using Ali.PayTr.Abstractions.Models;
 using Ali.PayTr.Abstractions.Options;
 using Ali.PayTr.Core.Utilities;
@@ -32,7 +32,7 @@ public sealed class PayTrQueryService : IPayTrQueryService
         var merchantOid = MerchantOidConverter.ToMerchantOid(request.CorrelationId);
 
         var hashStr = _options.MerchantId + merchantOid + _options.MerchantSalt;
-        var paytrToken = _hashService.CreateTokenHash(hashStr, _options.MerchantKey, "");
+        var paytrToken = _hashService.CreateTokenHash(hashStr, _options.MerchantKey);
 
         var postData = new Dictionary<string, string>
         {

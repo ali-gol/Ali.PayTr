@@ -61,7 +61,7 @@ public class PayTrNotificationProcessorTests
         };
 
         // Return a different hash than what's in the notification
-        _mockHashService.Setup(x => x.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+        _mockHashService.Setup(x => x.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>()))
             .Returns("c29tZV9vdGhlcl9oYXNo");
 
         // Act 
@@ -98,7 +98,7 @@ public class PayTrNotificationProcessorTests
 
         var order = new PayTrOrder { Id = Guid.NewGuid(), CorrelationId = correlationId, Status = OrderStatus.Created.ToString() };
 
-        _mockHashService.Setup(x => x.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+        _mockHashService.Setup(x => x.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>()))
             .Returns("dmFsaWRfaGFzaA==");
 
         _mockRepository.Setup(x => x.GetOrderByCorrelationIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -140,7 +140,7 @@ public class PayTrNotificationProcessorTests
 
         var order = new PayTrOrder { Id = Guid.NewGuid(), CorrelationId = correlationId, Status = OrderStatus.Created.ToString() };
 
-        _mockHashService.Setup(x => x.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+        _mockHashService.Setup(x => x.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>()))
             .Returns("dmFsaWRfaGFzaA==");
 
         _mockRepository.Setup(x => x.GetOrderByCorrelationIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))

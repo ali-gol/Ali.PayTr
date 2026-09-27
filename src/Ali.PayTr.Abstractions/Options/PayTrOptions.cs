@@ -15,6 +15,7 @@ public sealed record PayTrOptions
     [Required(AllowEmptyStrings = false)] public string Currency { get; set; } = "TRY";
 
     [Required(AllowEmptyStrings = false)] public bool TestMode { get; set; }
+    public bool DebugMode { get; set; } = false;
 
     [Required] public string Language { get; set; } = "tr";
 
@@ -24,4 +25,6 @@ public sealed record PayTrOptions
     [Required] public string FailUrlPattern { get; set; } = "fail/{correlationId}";
 
     [Required, Url] public string ApiBaseUrl { get; set; } = "https://www.paytr.com/";
+    
+    [Range(1, 1440)] public int TimeoutLimitMinutes { get; set; } = 30;
 }

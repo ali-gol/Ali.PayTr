@@ -11,22 +11,21 @@ public class PayTrHashServiceTests
     {
         // Arrange
         var service = new PayTrHashService();
-        var hashStr = "test_string";
+        var hashStr = "test_string" + "my_salt";
         var merchantKey = "my_secret_key";
-        var merchantSalt = "my_salt";
 
         // Act
-        var result = service.CreateTokenHash(hashStr, merchantKey, merchantSalt);
+        var result = service.CreateTokenHash(hashStr, merchantKey);
 
         // Assert
-        var expectedHash = GenerateExpectedHash(hashStr, merchantKey, merchantSalt);
+        var expectedHash = GenerateExpectedHash(hashStr, merchantKey);
         Assert.Equal(expectedHash, result);
     }
 
-    private string GenerateExpectedHash(string hashStr, string merchantKey, string merchantSalt)
+    private string GenerateExpectedHash(string hashStr, string merchantKey)
     {
         var key = Encoding.UTF8.GetBytes(merchantKey);
-        var message = Encoding.UTF8.GetBytes(hashStr + merchantSalt);
+        var message = Encoding.UTF8.GetBytes(hashStr);
         
         using var hmac = new HMACSHA256(key);
         var hashValue = hmac.ComputeHash(message);

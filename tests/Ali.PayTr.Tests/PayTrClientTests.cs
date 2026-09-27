@@ -65,7 +65,7 @@ namespace Ali.PayTr.Tests
                 BasketItems = new List<PayTrBasketItem> { new() { Name = "Item", Price = 100.50m, Quantity = 1 } }
             };
 
-            _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>()))
                             .Returns("hashed_token");
 
             // Act
@@ -103,7 +103,7 @@ namespace Ali.PayTr.Tests
                 BasketItems = new List<PayTrBasketItem> { new() { Name = "Item", Price = 100m, Quantity = 1 } }
             };
 
-            _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>()))
                             .Returns("hashed_token");
 
             // Act

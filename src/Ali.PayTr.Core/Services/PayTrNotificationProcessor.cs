@@ -42,10 +42,20 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
         ArgumentException.ThrowIfNullOrEmpty(notification.Hash, nameof(notification.Hash));
         ArgumentException.ThrowIfNullOrEmpty(notification.MerchantOid, nameof(notification.MerchantOid));
-        var correlationId = Guid.Parse(notification.MerchantOid);
+        if (!Guid.TryParse(notification.MerchantOid, out var correlationId))
+        {
+            _logger.LogWarning("Invalid MerchantOid format received: {MerchantOid}", notification.MerchantOid);
+            return new PayTrNotificationVerifyResult
+            {
+                IsVerificationSuccessful = false,
+                FailureReason = "Invalid MerchantOid format",
+                ExpectedHash = string.Empty,
+                ReceivedHash = notification.Hash ?? string.Empty
+            };
+        }
 
         var hashStr = notification.MerchantOid + _options.MerchantSalt + notification.Status + notification.TotalAmount;
-        var expectedHash = _hashService.CreateTokenHash(hashStr, _options.MerchantKey, "");
+        var expectedHash = _hashService.CreateTokenHash(hashStr, _options.MerchantKey);
         //if (expectedHash != notification.Hash)
         //basically we should not use simple string equality for hash comparison to prevent timing attacks.
         //Instead, we can use a method that compares the hashes in constant time.
@@ -69,7 +79,7 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
                 ReceivedHash = notification.Hash
             };
         }
-        if (notification.IsSuccess)
+        if (!notification.IsSuccess)
         {
             var failedReason = _payTrFailReasonService.GetFailedReasonByReasonCode(notification.FailedReasonCode);
             notification.FailedReasonMsg = failedReason.failed_reason_msg;

@@ -6,6 +6,7 @@ public sealed class PayTrNotificationRequest
     public required string MerchantOid { get; set; }
     public required string Status { get; set; }
     public required string TotalAmount { get; set; }
+    public string? PaymentAmount { get; set; }
     public required string Hash { get; set; }
     public int FailedReasonCode { get; set; } = default!;
     public string FailedReasonMsg { get; set; } = default!;

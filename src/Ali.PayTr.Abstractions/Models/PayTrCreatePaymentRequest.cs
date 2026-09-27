@@ -29,5 +29,6 @@ public sealed class PayTrCreatePaymentRequest
     public int InstallmentCount { get; set; } = 1;
     
     public string? Language { get; set; }
+    public int? TimeoutLimitMinutes { get; set; }
     public List<PayTrBasketItem> BasketItems { get; set; } = new();
 }
