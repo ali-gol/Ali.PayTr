@@ -50,7 +50,7 @@ public class PayTrRefundServiceTests
             ReferenceNo = "ref123"
         };
 
-        _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+        _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>()))
                         .Returns("hashed_token");
 
         // Act
@@ -75,7 +75,7 @@ public class PayTrRefundServiceTests
 
         var request = new PayTrRefundRequest { CorrelationId = Guid.NewGuid(), ReturnAmount = 50m };
 
-        _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+        _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>()))
                         .Returns("hashed_token");
 
         // Act

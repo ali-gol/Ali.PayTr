@@ -48,8 +48,11 @@ public sealed class PayTrClient : IPayTrClient
         var merchantOid = MerchantOidConverter.ToMerchantOid(request.CorrelationId);
         var paymentAmountStr = ConvertAmountToString(request.PaymentAmount);
 
-        var basketJson = JsonSerializer.Serialize(request.BasketItems.Select(x => new object[] { x.Name, x.Price, x.Quantity }));
+        var basketJson = JsonSerializer.Serialize(request.BasketItems.Select(x => new object[] { x.Name, x.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture), x.Quantity }));
         var basketBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(basketJson));
+
+        var noInstallment = request.InstallmentCount == 1 ? "1" : "0";
+        var maxInstallment = request.InstallmentCount == 1 ? "0" : request.InstallmentCount.ToString();
 
         var hashStr = string.Concat(
             _options.MerchantId,
@@ -58,13 +61,14 @@ public sealed class PayTrClient : IPayTrClient
             request.CustomerEmail,
             paymentAmountStr,
             basketBase64,
-            request.InstallmentCount == 1 ? "0" : "1",
-            request.InstallmentCount.ToString(),
+            noInstallment,
+            maxInstallment,
             request.Currency,
-            _options.TestMode ? "1" : "0"
+            _options.TestMode ? "1" : "0",
+            _options.MerchantSalt
         );
 
-        var paytrToken = _hashService.CreateTokenHash(hashStr, _options.MerchantKey, _options.MerchantSalt);
+        var paytrToken = _hashService.CreateTokenHash(hashStr, _options.MerchantKey);
 
         var postData = new Dictionary<string, string>
         {
@@ -76,14 +80,14 @@ public sealed class PayTrClient : IPayTrClient
             ["paytr_token"] = paytrToken,
             ["user_basket"] = basketBase64,
             ["debug_on"] = "1",
-            ["no_installment"] = request.InstallmentCount == 1 ? "0" : "1",
-            ["max_installment"] = request.InstallmentCount.ToString(),
+            ["no_installment"] = noInstallment,
+            ["max_installment"] = maxInstallment,
             ["user_name"] = request.CustomerFullName,
             ["user_address"] = request.CustomerAddress,
             ["user_phone"] = request.CustomerPhone,
             ["merchant_ok_url"] = BuildReturnUrl(_options.SuccessUrlPattern, request.CorrelationId),
             ["merchant_fail_url"] = BuildReturnUrl(_options.FailUrlPattern, request.CorrelationId),
-            ["timeout_limit"] = "30",
+            ["timeout_limit"] = (request.TimeoutLimitMinutes ?? _options.TimeoutLimitMinutes).ToString(),
             ["currency"] = request.Currency,
             ["test_mode"] = _options.TestMode ? "1" : "0",
             ["lang"] = request.Language ?? _options.Language ?? "tr"

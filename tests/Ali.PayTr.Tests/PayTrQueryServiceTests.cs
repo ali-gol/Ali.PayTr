@@ -47,7 +47,7 @@ public class PayTrQueryServiceTests
         var correlationId = Guid.NewGuid();
         var request = new PayTrQueryRequest { CorrelationId = correlationId };
 
-        _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+        _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>()))
                         .Returns("hashed_token");
 
         // Act
@@ -73,7 +73,7 @@ public class PayTrQueryServiceTests
 
         var request = new PayTrQueryRequest { CorrelationId = Guid.NewGuid() };
 
-        _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+        _hashServiceMock.Setup(h => h.CreateTokenHash(It.IsAny<string>(), It.IsAny<string>()))
                         .Returns("hashed_token");
 
         // Act

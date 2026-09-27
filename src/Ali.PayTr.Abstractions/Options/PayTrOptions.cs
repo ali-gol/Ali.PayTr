@@ -24,4 +24,6 @@ public sealed record PayTrOptions
     [Required] public string FailUrlPattern { get; set; } = "fail/{correlationId}";
 
     [Required, Url] public string ApiBaseUrl { get; set; } = "https://www.paytr.com/";
+    
+    [Range(1, 1440)] public int TimeoutLimitMinutes { get; set; } = 30;
 }

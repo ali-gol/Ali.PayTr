@@ -1,4 +1,4 @@
-﻿using Ali.PayTr.Abstractions.Interfaces;
+using Ali.PayTr.Abstractions.Interfaces;
 using Ali.PayTr.Abstractions.Models;
 using Ali.PayTr.Abstractions.Options;
 using Ali.PayTr.Core.Utilities;
@@ -33,7 +33,7 @@ public sealed class PayTrRefundService : IPayTrRefundService
         var returnAmountStr = request.ReturnAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
 
         var hashStr = _options.MerchantId + merchantOid + returnAmountStr + _options.MerchantSalt;
-        var paytrToken = _hashService.CreateTokenHash(hashStr, _options.MerchantKey, "");
+        var paytrToken = _hashService.CreateTokenHash(hashStr, _options.MerchantKey);
 
         var postData = new Dictionary<string, string>
         {

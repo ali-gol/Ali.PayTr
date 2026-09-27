@@ -32,6 +32,7 @@ internal static class PayTrNotificationEndpoint
             MerchantOid = form["merchant_oid"].ToString(),
             Status = form["status"].ToString(),
             TotalAmount = form["total_amount"].ToString(),
+            PaymentAmount = form["payment_amount"].ToString(),
             Hash = form["hash"].ToString(),
             FailedReasonCode = int.TryParse(form["failed_reason_code"].ToString(), out var failedReasonCode) ? failedReasonCode : -1,
             FailedReasonMsg = form["failed_reason_msg"].ToString(),
@@ -47,6 +48,6 @@ internal static class PayTrNotificationEndpoint
             logger.LogError("Failed to process PayTr notification. Reason: {Reason}", processResult);
             return Results.BadRequest("Failed to process notification");
         }
-        return Results.Ok("OK");
+        return Results.Text("OK", "text/plain");
     }
 }

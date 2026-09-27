@@ -45,7 +45,7 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
         var correlationId = Guid.Parse(notification.MerchantOid);
 
         var hashStr = notification.MerchantOid + _options.MerchantSalt + notification.Status + notification.TotalAmount;
-        var expectedHash = _hashService.CreateTokenHash(hashStr, _options.MerchantKey, "");
+        var expectedHash = _hashService.CreateTokenHash(hashStr, _options.MerchantKey);
         //if (expectedHash != notification.Hash)
         //basically we should not use simple string equality for hash comparison to prevent timing attacks.
         //Instead, we can use a method that compares the hashes in constant time.
