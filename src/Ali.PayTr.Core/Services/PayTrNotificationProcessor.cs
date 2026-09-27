@@ -130,7 +130,21 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
         }
 
         await LogNotificationAsync(notification, null, order.Id, cancellationToken);
-        await _repository.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _repository.SaveChangesAsync(cancellationToken);
+        }
+        catch (Ali.PayTr.Abstractions.Exceptions.PayTrConcurrencyException ex)
+        {
+            _logger.LogInformation(ex, "Concurrency exception occurred for order {MerchantOid}. Webhook likely processed by another thread.", notification.MerchantOid);
+            return new PayTrNotificationVerifyResult
+            {
+                ReceivedHash = notification.Hash,
+                ExpectedHash = expectedHash,
+                FailureReason = "Order was finalized concurrently by another thread.",
+                IsVerificationSuccessful = true
+            };
+        }
 
         if (wasFinalized)
         {
@@ -242,7 +256,14 @@ public sealed class PayTrNotificationProcessor : IPayTrNotificationProcessor
 
         if (failedReason != null)
         {
-            await _repository.SaveChangesAsync(ct);
+            try
+            {
+                await _repository.SaveChangesAsync(ct);
+            }
+            catch (Ali.PayTr.Abstractions.Exceptions.PayTrConcurrencyException ex)
+            {
+                _logger.LogInformation(ex, "Concurrency exception occurred while saving notification for order {OrderId}. This webhook was likely processed by another thread.", orderId);
+            }
         }
     }
 

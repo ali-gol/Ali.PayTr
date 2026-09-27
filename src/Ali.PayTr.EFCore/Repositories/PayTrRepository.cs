@@ -1,4 +1,4 @@
-﻿using Ali.PayTr.Core.Entities;
+using Ali.PayTr.Core.Entities;
 using Ali.PayTr.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Threading;
@@ -56,6 +56,13 @@ public class PayTrRepository<TContext> : IPayTrRepository where TContext : DbCon
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new Ali.PayTr.Abstractions.Exceptions.PayTrConcurrencyException("A concurrency exception occurred while saving changes to the PayTR entities.", ex);
+        }
     }
 }

@@ -5,6 +5,8 @@ using Ali.PayTr.Core.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using System.Globalization;
+using System.Linq;
 
 namespace Ali.PayTr.Core.Clients;
 
@@ -29,7 +31,7 @@ public sealed class PayTrClient : IPayTrClient
 
     public string ConvertAmountToString(decimal amount)
     {
-        return ((long)Math.Round(amount * 100, MidpointRounding.AwayFromZero)).ToString();
+        return ((long)Math.Round(amount * 100, MidpointRounding.AwayFromZero)).ToString(CultureInfo.InvariantCulture);
     }
 
     private string BuildReturnUrl(string pattern, Guid correlationId)
@@ -53,40 +55,27 @@ public sealed class PayTrClient : IPayTrClient
         {
             return new PayTrCreatePaymentResponse { IsSuccess = false, CorrelationId = request.CorrelationId, Message = "BasketItems cannot be empty." };
         }
+        if (string.IsNullOrWhiteSpace(request.CustomerEmail))
+        {
+            return new PayTrCreatePaymentResponse { IsSuccess = false, CorrelationId = request.CorrelationId, Message = "CustomerEmail cannot be empty." };
+        }
 
-        // Calculate Hash
-        // user_ip + merchant_oid + email + payment_amount + user_basket + no_installment + max_installment + currency + test_mode
+        var paytrToken = _hashService.CreateIFrameToken(request, _options);
 
-        var userIp = request.ClientIp;
+        var userIp = request.ClientIp ?? "127.0.0.1";
         var merchantOid = MerchantOidConverter.ToMerchantOid(request.CorrelationId);
         var paymentAmountStr = ConvertAmountToString(request.PaymentAmount);
 
-        var basketJson = JsonSerializer.Serialize(request.BasketItems.Select(x => new object[] { x.Name, x.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture), x.Quantity }));
+        var basketJson = JsonSerializer.Serialize(request.BasketItems.Select(x => new object[] { x.Name, x.Price.ToString("0.00", CultureInfo.InvariantCulture), x.Quantity }));
         var basketBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(basketJson));
 
         var noInstallment = request.InstallmentCount == 1 ? "1" : "0";
         var maxInstallment = request.InstallmentCount == 1 ? "0" : request.InstallmentCount.ToString();
 
-        var hashStr = string.Concat(
-            _options.MerchantId,
-            userIp,
-            merchantOid,
-            request.CustomerEmail,
-            paymentAmountStr,
-            basketBase64,
-            noInstallment,
-            maxInstallment,
-            request.Currency,
-            _options.TestMode ? "1" : "0",
-            _options.MerchantSalt
-        );
-
-        var paytrToken = _hashService.CreateTokenHash(hashStr, _options.MerchantKey);
-
         var postData = new Dictionary<string, string>
         {
             ["merchant_id"] = _options.MerchantId,
-            ["user_ip"] = userIp ?? "127.0.0.1",
+            ["user_ip"] = userIp,
             ["merchant_oid"] = merchantOid,
             ["email"] = request.CustomerEmail,
             ["payment_amount"] = paymentAmountStr,
@@ -95,13 +84,13 @@ public sealed class PayTrClient : IPayTrClient
             ["debug_on"] = _options.DebugMode ? "1" : "0",
             ["no_installment"] = noInstallment,
             ["max_installment"] = maxInstallment,
-            ["user_name"] = request.CustomerFullName,
-            ["user_address"] = request.CustomerAddress,
-            ["user_phone"] = request.CustomerPhone,
+            ["user_name"] = request.CustomerFullName ?? string.Empty,
+            ["user_address"] = request.CustomerAddress ?? string.Empty,
+            ["user_phone"] = request.CustomerPhone ?? string.Empty,
             ["merchant_ok_url"] = BuildReturnUrl(_options.SuccessUrlPattern, request.CorrelationId),
             ["merchant_fail_url"] = BuildReturnUrl(_options.FailUrlPattern, request.CorrelationId),
             ["timeout_limit"] = (request.TimeoutLimitMinutes ?? _options.TimeoutLimitMinutes).ToString(),
-            ["currency"] = request.Currency,
+            ["currency"] = request.Currency ?? "TL",
             ["test_mode"] = _options.TestMode ? "1" : "0",
             ["lang"] = request.Language ?? _options.Language ?? "tr"
         };
@@ -110,7 +99,9 @@ public sealed class PayTrClient : IPayTrClient
         {
             using var response = await _httpClient.PostAsync("odeme/api/get-token", new FormUrlEncodedContent(postData), cancellationToken);
             var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogTrace($"PayTR api response received: {request.CorrelationId}\n{responseString}");
+            
+            _logger.LogTrace("PayTR api response received: {CorrelationId}\n{ResponseString}", request.CorrelationId, responseString);
+            
             using var doc = JsonDocument.Parse(responseString);
             var status = doc.RootElement.GetProperty("status").GetString();
             if (status == "success")
@@ -129,7 +120,8 @@ public sealed class PayTrClient : IPayTrClient
                 var reason = "Unknown";
                 if (doc.RootElement.TryGetProperty("reason", out var r))
                     reason = r.GetString();
-                _logger.LogError($"PayTR Api unknown error. CorrelationId:{request.CorrelationId}: reason:{reason}");
+                
+                _logger.LogError("PayTR Api unknown error. CorrelationId:{CorrelationId}: reason:{Reason}", request.CorrelationId, reason);
                 return new PayTrCreatePaymentResponse
                 {
                     IsSuccess = false,
