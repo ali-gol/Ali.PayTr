@@ -7,6 +7,7 @@
     <Project Path="src/Ali.PayTr/Ali.PayTr.csproj" />
   </Folder>
   <Folder Name="/samples/">
+    <Project Path="samples/DirectApiSample/DirectApiSample.csproj" />
     <Project Path="samples/WebApplication1/WebApplication1.csproj" />
   </Folder>
   <Folder Name="/tests/">

@@ -4,11 +4,11 @@
 
 ## Özellikler
 
-✅ iFrame Checkout Entegrasyonu
+✅ iFrame & Direkt API (Direct API) Entegrasyonları
 
 ✅ Webhook / Notification Doğrulaması
 
-✅ **En Basit Entegrasyon Deneyimi**: Tek bir metod çağrısıyla sipariş oluşturun ve yönlendirme (redirect) URL'sini alın.
+✅ **En Basit Entegrasyon Deneyimi**: Tek bir metod çağrısıyla sipariş oluşturun ve yönlendirme (redirect) URL'sini alın veya Direkt API ile doğrudan ödeme çekin.
 
 ✅ **Otomatik Webhook İşleme**: PayTR'ın sunucudan-sunucuya bildirimlerini (`/paytr/notification`) otomatik olarak işler, HMAC hashlerini doğrular ve idempotentliği (tekrarsızlığı) güvenle kontrol eder.
 
@@ -21,6 +21,13 @@
 ✅ **Olay Güdümlü Mimari (Event-Driven)**: `IPayTrOrderEventHandler` arayüzünü sunarak, iş mantığınızın ödeme altyapısından tamamen soyutlanmasını (decouple) sağlar.
 
 ✅ **Hata Korumalı Yapılandırma**: ASP.NET Core `IOptions` ve DataAnnotations kullanarak, yapılandırmanızı uygulamanız başlar başlamaz doğrular.
+
+## Yenilikler (v0.9.3)
+- **Direkt API (Direct API) Desteği**: `IPayTrDirectClient` aracılığıyla, müşterinin kart bilgilerini kendi sunucunuzda toplayıp doğrudan PayTR API'ye gönderebilirsiniz.
+- **Gelişmiş Güvenlik ve Kararlılık (Agent Denetimleri)**: Webhook (bildirim) işleyicisi ve token istekleri üzerinde sıkılaştırmalar yapıldı.
+  - `CryptographicOperations.FixedTimeEquals` kullanılarak güvenli hash doğrulaması.
+  - Olası ağ hatalarına karşı try-catch sarmalaması ve güvenli payload ayıklama.
+- **Otomatik İstemci IP Algılama (DX)**: İstemci IP adresi belirtilmediğinde ASP.NET Core `IHttpContextAccessor` üzerinden otomatik olarak çekilir.
 
 ## Kurulum ve Kayıt
 
@@ -208,11 +215,11 @@ A modular, clean-architecture .NET payment integration library for **PayTR**. Th
 
 ## Features
 
-✅ iFrame Checkout Integration
+✅ iFrame & Direct API Checkout Integrations
 
 ✅ Webhook / Notification Validation
 
-✅ **Simplest Integration Experience**: Create an order and get a redirect URL with a single method call.
+✅ **Simplest Integration Experience**: Create an order and get a redirect URL with a single method call, or charge directly using the Direct API.
 
 ✅ **Automated Webhook Processing**: Automatically handles PayTR's server-to-server notifications (`/paytr/notification`), validates HMAC hashes, and verifies idempotency safely.
 
@@ -225,6 +232,13 @@ A modular, clean-architecture .NET payment integration library for **PayTR**. Th
 ✅ **Event-Driven Architecture**: Exposes `IPayTrOrderEventHandler` so your business logic is cleanly decoupled from the payment infrastructure.
 
 ✅ **Fail-Safe Configuration**: Uses ASP.NET Core `IOptions` with DataAnnotations that validate your configuration immediately at application startup.
+
+## What's New in v0.9.3
+- **Direct API Support**: With `IPayTrDirectClient`, you can collect credit card information on your own forms and charge directly through the PayTR API.
+- **Enhanced Security and Stability (Agent Audits)**: Hardened webhook processing and token requests.
+  - Secure hash validation using `CryptographicOperations.FixedTimeEquals`.
+  - Try-catch wrapping and safe payload parsing for robust network reliability.
+- **Automated Client IP Detection (DX)**: Automatically falls back to ASP.NET Core `IHttpContextAccessor` to get the client IP if not provided.
 
 ## Installation & Registration
 

@@ -1,0 +1,45 @@
+@{
+    ViewData["Title"] = "Direct API Checkout";
+}
+
+<div class="row mt-5">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                PayTR Direct API Checkout (Non-3D)
+            </div>
+            <div class="card-body">
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.Error</div>
+                }
+
+                <form asp-action="Checkout" method="post">
+                    <div class="mb-3">
+                        <label>Card Holder Name</label>
+                        <input type="text" name="cardHolderName" class="form-control" required value="TEST USER" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Card Number (Test Cards: 4355084355084358)</label>
+                        <input type="text" name="cardNumber" class="form-control" required value="4355084355084358" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label>Expire Month</label>
+                            <input type="text" name="expireMonth" class="form-control" required value="12" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Expire Year</label>
+                            <input type="text" name="expireYear" class="form-control" required value="24" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>CVV</label>
+                            <input type="text" name="cvv" class="form-control" required value="000" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Pay 100.50 TL</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
